@@ -142,4 +142,105 @@ class CarsScraper:
         browser.quit()
         return links_brands
 
+    def get_all_navegation(self, link, car_class):
+        """Return all cars from all the pages"""
+
+        cl_name = "pillList"
+
+        browser = self.din_scraper(link)
+
+        while True:
+            try:
+                cars_in_page = []
+
+                element = WebDriverWait(browser, 10).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, cl_name)
+                                                   )
+                )
+                a_sect = element.find_elements_by_css_selector(
+                    "div[class^='pill "
+                    "pill--vo-km0 "
+                    "script__pill car-']")
+
+                for a in a_sect:
+                    car = Car()
+                    if a.find_element_by_class_name(
+                            "make-model-version").text != '':
+                        car.update = a.find_element_by_class_name(
+                            "update").text
+                        car.model = a.find_element_by_class_name(
+                            "make-model-version").text
+                        car.class_ = car_class
+                        car.price = a.find_element_by_class_name("price").text
+                        car.cant_km = a.find_element_by_class_name("km").text
+                        car.fuel = a.find_element_by_class_name("gas").text
+                        car.cv = a.find_element_by_class_name("cv").text
+                        car.location = car.fuel = a.find_element_by_class_name(
+                            "location").text
+                        car.year = car.fuel = a.find_element_by_class_name(
+                            "year").text
+                        cars_in_page.append(car)
+
+                # I/O Operations.
+                try:
+                    write_data(cars_in_page)
+
+                except Exception as e:
+                    print("Error in I/O Operations.")
+
+                try:
+                    next_button = WebDriverWait(browser, 0).until(
+                        EC.presence_of_element_located(
+                            (By.LINK_TEXT, 'Siguiente')))
+
+                    next_button.click()
+                except:
+                    browser.quit()
+                    break
+
+                try:
+                    off_butt = WebDriverWait(browser, 0).until(
+                        EC.presence_of_element_located((
+                            By.CSS_SELECTOR, '#yw0 > li.pager-next.pager'
+                                             '-next--off')))
+
+                    browser.quit()
+                    break
+                except NoSuchElementException:
+                    pass
+
+            except:
+                pass
+
+
+def main(self):
+    start = time.perf_counter()
+
+    cars = CarsScraper('https://www.coches.com')
+    driver = cars.din_scraper(cars.url)
+
+    # Get Links of classes [Km 0, Second Hand]
+    links = cars.get_links(driver)
+
+    # Close the useless driver
+    driver.close()
+
+    # Get links of each brand from each class
+    links_km0 = cars.brands_links(links[0], cars.km0)
+    links_sec = cars.brands_links(links[1], cars.second)
+
+    Parallel(n_jobs=4)(delayed(
+        cars.get_all_navegation)(url, cars.km0) for url in links_km0)
+
+    Parallel(n_jobs=4)(delayed(
+        cars.get_all_navegation)(url, cars.second) for url in links_sec)
+
+    end = time.perf_counter()
+
+    print("Time elapsed : {} minutes".format((end - start) / 60))
+
+
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
 
