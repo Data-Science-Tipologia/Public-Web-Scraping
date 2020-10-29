@@ -29,7 +29,7 @@ def write_data(cars_in_page):
     # I/O Section
     df = pd.DataFrame.from_records(
         [elem.to_dict() for elem in cars_in_page])
-    with open('data.csv', 'a') as f:
+    with open('./csv/data.csv', 'a') as f:
         df.to_csv(f, header=False, index=False, line_terminator='\n')
         f.close()
 
