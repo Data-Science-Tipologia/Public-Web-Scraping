@@ -59,3 +59,42 @@ class Car:
             'location': self.location,
             'year': self.year
         }
+
+class CarsScraper:
+
+    def __init__(self, url):
+        self.url = url
+        self.user_agent = 'Chrome/86.0.4240.111'
+        self.headers = {'User-Agent': self.user_agent
+                        }
+        self.news = 'Nuevos'
+        self.km0 = 'Km 0'
+        self.second = 'Segunda mano '
+
+    def din_scraper(self, url):
+        """Return the Browser Driver"""
+
+        opts = Options()
+        opts.add_argument(self.user_agent)
+
+        browser = webdriver.Chrome(options=opts)
+
+
+        try:
+            browser.get(url)
+            time.sleep(3)
+
+            cookies_button = WebDriverWait(browser,
+                                           20).until(
+                EC.presence_of_element_located(
+                    (By.XPATH,
+                     '//*[@id="CybotCookiebotDialogBodyButtonAccept"]')))
+
+            cookies_button.click()
+
+        except :
+            print("Error in link : {}".format(url))
+            return browser
+
+        return browser
+
