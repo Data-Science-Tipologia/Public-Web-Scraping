@@ -213,7 +213,7 @@ class CarsScraper:
                 pass
 
 
-def main(self):
+def main():
     start = time.perf_counter()
 
     cars = CarsScraper('https://www.coches.com')
