@@ -1,18 +1,8 @@
-import urllib.request
 import time
 from joblib import Parallel, delayed
-from bs4 import BeautifulSoup
 import pandas as pd
-import requests
-import builtwith
-import whois
-import csv
-import re
-import concurrent.futures
 import validators
 from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import StaleElementReferenceException
-from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,20 +11,23 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 def write_data(cars_in_page):
+
     """
-    Input / Output Operations.
-    :param cars_in_page:
-    :return:
+    Input / Output Operations writing in data.csv.
+    :param cars_in_page: list(cars)
+    :return: void
+
     """
     # I/O Section
     df = pd.DataFrame.from_records(
         [elem.to_dict() for elem in cars_in_page])
-    with open('./csv/data.csv', 'a') as f:
+    with open("../csv/data.csv", 'a') as f:
         df.to_csv(f, header=False, index=False, line_terminator='\n')
         f.close()
 
 
 class Car:
+
     def __init__(self, update=None, model=None, class_=None, price=None,
                  cant_km=None, fuel=None, cv=None, location=None, year=None):
         self.update = str(update)
@@ -70,20 +63,30 @@ class CarsScraper:
                         }
         self.news = 'Nuevos'
         self.km0 = 'Km 0'
-        self.second = 'Segunda mano '
+        self.used = 'Segunda mano '
+        self.driver_path = '../drivers/chromedriver.exe '
 
     def din_scraper(self, url):
-        """Return the Browser Driver"""
 
+        """
+        Return the browser Chrome driver.
+
+        :param url: string
+        :return:  chromedriver
+        """
+
+        # Setting the options for the driver.
         opts = Options()
         opts.add_argument(self.user_agent)
 
-        browser = webdriver.Chrome(options=opts)
+        browser = webdriver.Chrome(self.driver_path, options=opts)
 
         try:
             browser.get(url)
-            time.sleep(3)
+            time.sleep(4)
 
+            # Explicit selenium waiting and,
+            # clicking the cookies button in main windows.
             cookies_button = WebDriverWait(browser,
                                            20).until(
                 EC.presence_of_element_located(
@@ -99,14 +102,21 @@ class CarsScraper:
         return browser
 
     def get_links(self, browser):
+
         """
-        Return a list of links_class from browser driver
+        Get the KM0 and Used Cars links from central menu in the index page.
+
+        :param browser: chromedriver
+        :return: links: list(string)
         """
         links = []
         try:
+            # Get the central menu element
             element = WebDriverWait(browser, 10).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "central-menu"))
             )
+
+            # Get the link finding by element properties.
             link_KM0 = element.find_element_by_link_text(self.km0)
             link_Sec = element.find_element_by_xpath("//*[@id='header']/div["
                                                      "2]/ul/li[4]/ul/li[1]/a")
@@ -117,33 +127,57 @@ class CarsScraper:
         return links
 
     def brands_links(self, link, car_class):
-        """Return a list with every link for each brand"""
+
+        """
+        Get  the links for every brand, for each class, KM0 and
+        User Cars.
+
+        :param link: string
+        :param car_class: string
+        :return: list(string)
+        """
         links_brands = []
         cl_name = ""
+
         if car_class == self.news:
             cl_name = "cc_grid_makes"
-        elif car_class == self.km0 or car_class == self.second:
+        elif car_class == self.km0 or car_class == self.used:
             cl_name = "row.cc_makes "
+
         browser = self.din_scraper(link)
+
         try:
+            # Get element finding by class name.
             element = WebDriverWait(browser, 10).until(
                 EC.presence_of_element_located((By.CLASS_NAME, cl_name)
                                                )
             )
+            # Get the div container for all 'a' elements.
             a_sect = element.find_elements_by_tag_name('a')
+
+            # Get the url variable from each 'a' element.
             for a in a_sect:
                 try:
+                    # Validator for 'url' format.
                     if validators.url(a.get_attribute('href')):
                         links_brands.append(a.get_attribute('href'))
                 except:
                     pass
         finally:
             pass
+
         browser.quit()
         return links_brands
 
     def get_all_navegation(self, link, car_class):
-        """Return all cars from all the pages"""
+        """
+        Main functionality method, get all cars for every page navigating
+        over the page. Accept the cookies button, and click the next button.
+
+        :param link: string
+        :param car_class: string
+        :return: void
+        """
 
         cl_name = "pillList"
 
@@ -153,15 +187,19 @@ class CarsScraper:
             try:
                 cars_in_page = []
 
+                # Get the element that contains all cars.
                 element = WebDriverWait(browser, 10).until(
                     EC.presence_of_element_located((By.CLASS_NAME, cl_name)
                                                    )
                 )
+
+                # Get tall the containers individually.
                 a_sect = element.find_elements_by_css_selector(
                     "div[class^='pill "
                     "pill--vo-km0 "
                     "script__pill car-']")
 
+                # Get tha values for each car.
                 for a in a_sect:
                     car = Car()
                     if a.find_element_by_class_name(
@@ -186,8 +224,9 @@ class CarsScraper:
                     write_data(cars_in_page)
 
                 except Exception as e:
-                    print("Error in I/O Operations.")
+                    print("Error in I/O Operations. {}.".format(e))
 
+                # Navigate to next page.
                 try:
                     next_button = WebDriverWait(browser, 0).until(
                         EC.presence_of_element_located(
@@ -198,6 +237,7 @@ class CarsScraper:
                     browser.quit()
                     break
 
+                # Looking fro next button, if not appear break the sentence.
                 try:
                     off_butt = WebDriverWait(browser, 0).until(
                         EC.presence_of_element_located((
@@ -214,33 +254,34 @@ class CarsScraper:
 
 
 def main():
+    # Starting the timer.
     start = time.perf_counter()
 
     cars = CarsScraper('https://www.coches.com')
     driver = cars.din_scraper(cars.url)
 
-    # Get Links of classes [Km 0, Second Hand]
+    # Get Links of classes [Km 0, Used Hand].
     links = cars.get_links(driver)
 
-    # Close the useless driver
+    # Close the useless driver.
     driver.close()
 
-    # Get links of each brand from each class
+    # Get links of each brand from each class.
     links_km0 = cars.brands_links(links[0], cars.km0)
-    links_sec = cars.brands_links(links[1], cars.second)
+    links_sec = cars.brands_links(links[1], cars.used)
 
+    # Launch the parallel workers for get the km 0 cars.
     Parallel(n_jobs=4)(delayed(
         cars.get_all_navegation)(url, cars.km0) for url in links_km0)
 
+    # Launch the parallel workers for get the used cars.
     Parallel(n_jobs=4)(delayed(
-        cars.get_all_navegation)(url, cars.second) for url in links_sec)
+        cars.get_all_navegation)(url, cars.used) for url in links_sec)
 
+    # Ending the timer.
     end = time.perf_counter()
 
     print("Time elapsed : {} minutes".format((end - start) / 60))
 
 
-if __name__ == "__main__":
-    # execute only if run as a script
-    main()
-
+main()
