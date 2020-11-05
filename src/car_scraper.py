@@ -11,7 +11,6 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 def write_data(cars_in_page):
-
     """
     Input / Output Operations writing in data.csv.
     :param cars_in_page: list(cars)
@@ -21,7 +20,7 @@ def write_data(cars_in_page):
     # I/O Section
     df = pd.DataFrame.from_records(
         [elem.to_dict() for elem in cars_in_page])
-    with open("../csv/data.csv", 'a') as f:
+    with open("./csv/data.csv", 'a', encoding='utf-8-sig') as f:
         df.to_csv(f, header=False, index=False, line_terminator='\n')
         f.close()
 
@@ -61,10 +60,9 @@ class CarsScraper:
         self.user_agent = 'Chrome/86.0.4240.111'
         self.headers = {'User-Agent': self.user_agent
                         }
-        self.news = 'Nuevos'
         self.km0 = 'Km 0'
         self.used = 'Segunda mano '
-        self.driver_path = '../drivers/chromedriver.exe '
+        self.driver_path = './drivers/chromedriver.exe'
 
     def din_scraper(self, url):
 
@@ -113,15 +111,18 @@ class CarsScraper:
         try:
             # Get the central menu element
             element = WebDriverWait(browser, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "central-menu"))
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR,
+                     "#header > div.header__central-menu.script__header-central-menu"))
             )
 
             # Get the link finding by element properties.
             link_KM0 = element.find_element_by_link_text(self.km0)
-            link_Sec = element.find_element_by_xpath("//*[@id='header']/div["
-                                                     "2]/ul/li[4]/ul/li[1]/a")
+            link_Sec = element.find_element_by_link_text("Segunda mano")
+
             links.append(link_KM0.get_attribute('href'))
             links.append(link_Sec.get_attribute('href'))
+
         except:
             print("Error in get_links function")
         return links
@@ -137,12 +138,8 @@ class CarsScraper:
         :return: list(string)
         """
         links_brands = []
-        cl_name = ""
 
-        if car_class == self.news:
-            cl_name = "cc_grid_makes"
-        elif car_class == self.km0 or car_class == self.used:
-            cl_name = "row.cc_makes "
+        cl_name = "row.cc_makes "
 
         browser = self.din_scraper(link)
 
@@ -204,18 +201,21 @@ class CarsScraper:
                     car = Car()
                     if a.find_element_by_class_name(
                             "make-model-version").text != '':
-                        car.update = a.find_element_by_class_name(
-                            "update").text
+                        car.update = " ".join(a.find_element_by_class_name(
+                            "update").text.split()[1:])
                         car.model = a.find_element_by_class_name(
                             "make-model-version").text
                         car.class_ = car_class
-                        car.price = a.find_element_by_class_name("price").text
-                        car.cant_km = a.find_element_by_class_name("km").text
+                        car.price = a.find_element_by_class_name("price").\
+                            text.split()[0]
+                        car.cant_km = a.find_element_by_class_name("km").\
+                            text.split()[0]
                         car.fuel = a.find_element_by_class_name("gas").text
-                        car.cv = a.find_element_by_class_name("cv").text
-                        car.location = car.fuel = a.find_element_by_class_name(
+                        car.cv = a.find_element_by_class_name("cv")\
+                            .text.split()[0]
+                        car.location = a.find_element_by_class_name(
                             "location").text
-                        car.year = car.fuel = a.find_element_by_class_name(
+                        car.year = a.find_element_by_class_name(
                             "year").text
                         cars_in_page.append(car)
 
@@ -257,6 +257,9 @@ def main():
     # Starting the timer.
     start = time.perf_counter()
 
+    car = Car("last_update", "model", "class", "price", "km", "fuel",
+              "cv", "location", "year")
+
     cars = CarsScraper('https://www.coches.com')
     driver = cars.din_scraper(cars.url)
 
@@ -270,18 +273,25 @@ def main():
     links_km0 = cars.brands_links(links[0], cars.km0)
     links_sec = cars.brands_links(links[1], cars.used)
 
-    # Launch the parallel workers for get the km 0 cars.
-    Parallel(n_jobs=4)(delayed(
-        cars.get_all_navegation)(url, cars.km0) for url in links_km0)
+    # Writing csv header.
+    write_data([car])
 
-    # Launch the parallel workers for get the used cars.
-    Parallel(n_jobs=4)(delayed(
-        cars.get_all_navegation)(url, cars.used) for url in links_sec)
+    try:
+        # Launch the parallel workers for get the km 0 cars.
+        Parallel(n_jobs=4)(delayed(
+            cars.get_all_navegation)(url, cars.km0) for url in links_km0)
 
-    # Ending the timer.
-    end = time.perf_counter()
+        # Launch the parallel workers for get the used cars.
+        Parallel(n_jobs=4)(delayed(
+            cars.get_all_navegation)(url, cars.used) for url in links_sec)
 
-    print("Time elapsed : {} minutes".format((end - start) / 60))
+        # Ending the timer.
+        end = time.perf_counter()
+
+        print("Time elapsed : {} minutes".format((end - start) / 60))
+
+    except Exception as e:
+        print("Error in main function. Error : {}".format(e))
 
 
 main()
