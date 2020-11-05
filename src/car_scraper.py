@@ -26,7 +26,7 @@ def write_data(cars_in_page):
 
 
 class Car:
-
+    # Class car, each object will have the following attributes
     def __init__(self, update=None, model=None, class_=None, price=None,
                  cant_km=None, fuel=None, cv=None, location=None, year=None):
         self.update = str(update)
@@ -40,6 +40,11 @@ class Car:
         self.year = str(year)
 
     def to_dict(self):
+        """
+        Create a dict from the car object.
+
+        :return: dict with the car attributes
+        """
         return {
             'update': self.update,
             'model': self.model,
