@@ -1,4 +1,4 @@
-# Coches.net WEB SCRAPING
+# Coches.com WEB SCRAPING
 
 _En este proyecto vamos a realizar un web scraping en la web: coches.com consiguiendo un archivo 
 .csv final con los datos de los coches disponibles en la web (de km0 y segunda mano)_
