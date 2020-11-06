@@ -18,8 +18,6 @@ Mira **src/car_scraper** para ver el código del proyecto.
 
 ### Estructura del código
 
-De momento vamos a repasar por encima qué hacemos. Y los distintos componentes.
-
 Lo primero a mencionar es que hemos optado por usar la libreria selenium la cual nos ha facilitado mucho la exploración
 de las páginas web al ser dinámicas.
 
@@ -39,10 +37,11 @@ La función _get_all_navigation_ es una de las más elavoradas, con ella hemos c
 de los distintos tipos (km0 y segunda mano) y marca. Se han recorrido las distintas páginas mediante _clicks dinamicos_
 evitando así cerrar y abrir nevagores constantemente y ahorrando mucho tiempo y recursos.
 
-Finalmente, comentar que hemos usado trabajos paralelos para acelerar el proceso. Usamos 4 jobs al mismo tiempo lo que
-se traduce en 4 navegadores distintos ejecutandose al mismo tiempo.
+Finalmente, comentar que hemos usado parallelismo para acelerar el proceso. Usamos 4 procesadores al mismo tiempo lo que
+se traduce en 4 navegadores distintos ejecutandose a la vez.
 
-El resultado final ha dado en aproximadamente 100 mil coches almacenados en el archivo csv.
+El resultado final ha dado en más de 100 mil coches almacenados en el archivo csv. Y el tiempo transcurrido en este proceso 
+con estas configuraciones fue de aproximadamente 5 horas.
 
 ## DOI del data set: 10.5281/zenodo.4247442
 
