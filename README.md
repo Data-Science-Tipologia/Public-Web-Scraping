@@ -17,7 +17,7 @@ las listas d elos coches divididas en muchas páginas.
 Lo primero a mencionar es que hemos optado por usar la libreria selenium la cual nos ha facilitado mucho la exploración
 de las páginas web al ser dinámicas.
 
-Tenemos una función _write_data_ para escribir los datos recolectados en un archivo .csv.
+Tenemos una función _write_data_ para escribir los datos recolectados en un archivo _csv_.
 
 Una clase _Car_ la cual usamos para almacenar los datos de cada coche creando un objeto de esta clase. Además,
 incluimos una función para transformar la clase en un diccionario que se utilizará para introducir los datos  en el -csv.
