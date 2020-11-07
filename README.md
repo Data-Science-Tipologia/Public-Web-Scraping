@@ -7,14 +7,10 @@ https://www.coches.com/
 
 ## Comenzando 🚀
 
-Lo primero que hemos heco es analizar la web, encontrando las etiquetas HTML necesarias para llegar a las páginas
+Lo primero que hemos hecho es analizar la web, encontrando las etiquetas HTML necesarias para llegar a las páginas
 de interés. Nosotros accederemos a los datos de los coches de km0 y de segunda mano, accesibles mediante una barra
 superior. Dentro de cada tipo, encontraremos las diferentes marcas de los coches y yendo a cada marca podremos encontrar
 las listas d elos coches divididas en muchas páginas.
-
-Mira **src/car_scraper** para ver el código del proyecto.
-
-
 
 ### Estructura del código
 
