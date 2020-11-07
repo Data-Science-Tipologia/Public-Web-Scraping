@@ -48,15 +48,28 @@ con estas configuraciones fue de aproximadamente 5 horas.
 
 ## Construido con PyCharm 🛠️
 
+## Integrantes 
+
+Reynel López Lantigua [/rllantigua](https://github.com/rllantigua)
+
+Jaime Gimeno Ferrer   [/jaimegf98](https://github.com/JaimeGimeno)
+   
+## Estructura del repositorio 
+
+/csv : Contiene el _data set_ obtenido de la ejecución de la herramienta.
+
+/drivers : Contiene el _chromedriver.exe_ , herramienta utilizada para lanzar una instancia del navegador (_Google Chrome_), tarea necesaria para realizar el scraping de esta página de contenido dinámico.
+ 
+/pdf : Contiene el archivo con la respuesta a las cuestiones planteadas en la práctica.
+
+/src : Contiene el código fuente de la herramienta.
 
 
-## Contribuyendo 🖇️
+## Bibliografía 
+1. Lawson, R. (2015). Web Scraping with Python. Packt Publishing Ltd. Chapter 2. Scraping the Data.
 
+2. Subirats, L., Calvo, M. (2018). Web Scraping. Editorial UOC. 
 
-
-## Versionado 📌
-
-
-## Autores ✒️
+3. Selenium Web Driver Documentation. [https://www.selenium.dev/documentation/en/](https://www.selenium.dev/documentation/en/)
 
 
